@@ -21,6 +21,12 @@ from djangorestapi import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('ailist/', views.AiquestList.as_view(), name='ailist'),
+    path('airetrive/<int:pk>', views.AiquestRetrive.as_view(), name='airetrive'),
     path('aicreate/', views.AiquestCreate.as_view(), name='aicreate'),
-    path('aicreate/<int:pk>', views.AiquestCreate.as_view(), name='aicreate'),
+    path('aiput/<int:pk>', views.AiquestUpdate.as_view(), name='aiput'),
+    path('aidelete/<int:pk>', views.AiquestDestroy.as_view(), name='aidelete'),
+    path('ai_list_creat/', views.AiquestList_Creat.as_view(), name='ai_list_creat'),
+    path('ai_rud/<int:pk>', views.AiquestRetrieve_Update_Destroy.as_view(), name='ai_rud'),
+
 ]
