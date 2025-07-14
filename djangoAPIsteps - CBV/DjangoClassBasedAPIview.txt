@@ -1,0 +1,236 @@
+-------------------------------------------Class Based API View-----------------------------------------------
+
+01. Make a new project folder
+
+	mkdir main_project
+	cd main_project
+
+02. Create a virtual environment inside the project folder
+
+	python -m venv venv
+
+03. Activate the virtual environment
+
+	Windows: venv\Scripts\activate
+	Linux/macOS: source venv/bin/activate
+
+04. Install Django inside project folder
+
+	pip install django
+
+05. Create Start the Django Project
+
+	django-admin startproject djangorest
+
+##. Run Your Project
+
+	python manage.py runserver
+
+06. let's wire up the API URLs. On to djangorest/urls.py:
+
+	path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+
+07. Add 'rest_framework' to INSTALLED_APPS. In djangorest/settings.py
+
+	 'rest_framework',
+
+08. Install Django REST framework
+
+	pip install djangorestframework
+
+09. Create a app- djangorestapi 
+
+	python manage.py startapp djangorestapi
+
+10. Add 'djangorestapi' to INSTALLED_APPS. In djangorest/settings.py
+
+	'djangorestapi',
+
+
+##. serializer:[Start---------------------------------------------------------------------------------------------------]
+[Complex Data] ------ convert to---> [ Native Python Datatype]------convert to ---->[ JSON / XML]
+
+##  Complex Data create start------------------------------------------------------------------------------------------->
+
+11. inside djangorestapi app model.py create model(Complex Data)-->
+	# Create your models here.
+	class Aiquest(models.Model):
+		teacher_name = models.CharField(max_length=25)
+		course_name = models.CharField(max_length=20)
+		course_dueation = models.IntegerField()
+		seat = models.IntegerField()
+
+## make migration to convert model into exactly into sql query 
+12. make migration:
+
+	python manage.py makemigrations
+	## now migrate
+	python manage.py migrate
+
+13.  Register  models in djangorestapi/admin.py: 
+	
+	import model: from . models import Aiquest
+	register like: @admin.register(Aiquest)
+				   #register sequentially so view as like this sequentially-
+				   class AiquestAdmin(admin.ModelAdmin):
+					  list_display = ['id','teacher_name','course_name','course_duration','seat']
+
+##  Complex Data create end-------------------------------------------------------------------------------------->
+
+##. Create superuser
+	python manage.py createsuperuser
+
+##  Convert to Native Python Datatype  start---------------------------------------------------------------------->
+
+14. Create a serializer in djangorestapi/serializers.py
+
+	serializers.py
+
+	# import serializer: 
+		from rest_framework import serializers
+		from rest_framework import serializers
+		from .models import Aiquest
+
+	# create serializer class:
+
+		class AiquestSerializer(serializers.ModelSerializer):
+			class Meta:
+				model = Aiquest
+				fields = ['teacher_name', 'course_name', 'course_duration', 'seat']
+
+
+	[ # manual process: 
+		class AiquestSerializer(serializers.Serializer):
+			teacher_name = serializers.CharField(max_length=25)
+			course_name = serializers.CharField(max_length=20)
+			course_duration = serializers.IntegerField()
+			seat = serializers.IntegerField()
+
+			def create(self, validated_data):
+				# Create a new Aiquest instance
+				aiquest_instance = Aiquest(
+					teacher_name=validated_data['teacher_name'],
+					course_name=validated_data['course_name'],
+					course_duration=validated_data['course_duration'],
+					seat=validated_data['seat']
+				)
+				# Save the instance to the database
+				aiquest_instance.save()
+				return aiquest_instance
+	]
+
+15. Create  views:
+
+	from django.shortcuts import render
+	from . models import Aiquest
+	from . serializers import AiquestSerializer
+	from rest_framework.views import APIView
+	from rest_framework.response import Response
+	from rest_framework import status
+
+	# Create your views here.
+
+	class AiquestCreate(APIView):
+
+		#-------------------    GET     -----------------------
+
+		def get(self, request, pk= None, format= None ):
+			id = pk
+		#  for specif id
+			if id is not None:
+				try:
+					ai = Aiquest.objects.get(id=id)
+					serializer = AiquestSerializer(ai)
+					return Response(serializer.data)
+				except Aiquest.DoesNotExist:
+					# return Response({"msg": " Not found"}, status=status.HTTP_404_NOT_FOUND)    or
+					return Response([], status=status.HTTP_200_OK)
+			
+		# for all data 
+			# import and store complex data into one variable from model:
+			ai = Aiquest.objects.all()
+
+			# convert/serialize into python dict:(import and use from serializers.py)
+			# many= True : used because of more than one object inside AiquestSerializer
+			serializer = AiquestSerializer(ai, many=True)
+
+			# convert python dict to JSON and return :
+			return Response(serializer.data)
+		
+
+		#-------------------    POST     -----------------------
+		
+		def post(self, request, format= None ):
+			serializer = AiquestSerializer(data=request.data)
+			if serializer.is_valid():
+				serializer.save()
+				return Response({"msg":"Successfully Insert Data"})
+			return Response(serializer.errors)
+		
+
+		#-------------------     PUT     -----------------------
+
+		def put(self, request, pk, format= None ):
+			id = pk
+			ai = Aiquest.objects.get(pk = id)
+			# serializer = AiquestSerializer(ai, data = request.data, partial = True) # this will allow   partial update
+			serializer = AiquestSerializer(ai, data = request.data) # this need to provide all field even is update one field
+			if serializer.is_valid():
+				serializer.save()
+				return Response({"msg":"Update Data Successfully"})
+			return Response(serializer.errors)
+
+		#-------------------    PATCH     -----------------------
+
+		def patch(self, request, pk, format= None ):
+			id = pk
+			ai = Aiquest.objects.get(pk = id)
+			serializer = AiquestSerializer(ai, data = request.data, partial = True)
+			if serializer.is_valid():
+				serializer.save()
+				return Response({"msg":"Partial Data Update Successfully"})
+			return Response(serializer.errors)
+		
+		#-------------------    DELETE     -----------------------
+
+		def delete(self, request, pk, format= None ):
+			id = pk
+			ai = Aiquest.objects.get(pk = id)
+			ai.delete()
+			return Response({"msg":"Delete Successfully"})
+
+
+16. Add new API URLs. On to djangorest/urls.py:
+	
+	path('aicreate/', views.AiquestCreate.as_view(), name='aicreate'),
+    path('aicreate/<int:pk>', views.AiquestCreate.as_view(), name='aicreate'),
+	
+
+
+    
+##. serializer:[End-----------------------------------------------------------------------------------------------------]
+	
+
+16. Create Urls in djangorest/urls.py
+	path('aicreate/', views.aiquest_create, name='aicreate'),
+    path('aicreate/<int:pk>', views.aiquest_create, name='aicreate'),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
