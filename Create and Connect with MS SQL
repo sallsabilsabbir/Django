@@ -20,7 +20,7 @@
 
 05. Create Start the Django Project
 
-	django-admin startproject Project
+	django-admin startproject Project . # create project same dir
 
 ##. Run Your Project
 
