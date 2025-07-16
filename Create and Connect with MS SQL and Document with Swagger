@@ -299,3 +299,65 @@
 		    responses=EmployeeSerializer
 		)
 
+##----------------------------------------API Documenting (2) for Swagger--------------------------------------->
+
+
+# pip install --upgrade drf-yasg
+# pip install --upgrade drf-yasg[validation]
+
+# In settings.py:
+
+	INSTALLED_APPS = [
+	   ...
+	   'django.contrib.staticfiles',  # required for serving swagger ui's css/js files
+	   'drf_yasg',
+	   ...
+	]
+
+# In urls.py:
+	# Swagger imports
+	from rest_framework import permissions
+	from drf_yasg.views import get_schema_view
+	from drf_yasg import openapi
+
+	# Schema View
+	schema_view = get_schema_view(
+	    openapi.Info(
+	        title="Employee API",
+	        default_version='v1',
+	        description="CRUD operations for Employee",
+	        contact=openapi.Contact(email="your-email@example.com"),
+	    ),
+	    public=True,
+	    permission_classes=[permissions.AllowAny],
+	)
+
+	urlpatterns = [
+
+	    # Swagger URLs
+	    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+	    # path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+	]
+
+
+# In views.py: 
+	# Swagger 
+	from drf_yasg.utils import swagger_auto_schema
+	from drf_yasg import openapi
+
+	# Add for post and put: 
+	@swagger_auto_schema(method='post',request_body=YourSerializerName,operation_description="Create new Name")
+	@swagger_auto_schema(method='put',request_body=YourSerializerName,operation_description="Update Name")
+
+
+
+
+
+
+
+
+
+
+
+
+
