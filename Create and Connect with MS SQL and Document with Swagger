@@ -132,7 +132,7 @@
 				fields = ['teacher_name', 'course_name', 'course_duration', 'seat']
 
 
-	[ # manual process: 
+	[ # serializer manual process: 
 		class AiquestSerializer(serializers.Serializer):
 			teacher_name = serializers.CharField(max_length=25)
 			course_name = serializers.CharField(max_length=20)
